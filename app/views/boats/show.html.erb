@@ -1,0 +1,37 @@
+<% content_for :title, @boat.name %>
+<div class="max-w-md mx-auto px-4 py-6 space-y-4">
+  <div>
+    <%= link_to "← My Boats", root_path, class: "text-sm text-blue-600" %>
+    <h1 class="text-2xl font-bold text-slate-900 mt-1"><%= @boat.name %></h1>
+    <div class="text-sm text-slate-500"><%= @boat.descriptor %></div>
+    <div class="mt-1 text-xs">
+      <span class="inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full"><%= @boat.location.name %></span>
+      <span class="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full ml-1"><%= @boat.storage_type.humanize %></span>
+      <% if @boat.slip %><span class="inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full ml-1">Slip <%= @boat.slip.label %></span><% end %>
+    </div>
+  </div>
+
+  <%= link_to "+ New request", new_request_path(boat_id: @boat.id),
+        class: "block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-3 rounded-lg" %>
+
+  <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
+    <% if @recent_requests.any? %>
+      <% @recent_requests.each do |r| %>
+        <%= link_to request_path(r), class: "block p-4 hover:bg-slate-50" do %>
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="font-medium text-slate-900">
+                <span class="mr-1"><%= r.request_type.icon %></span>
+                <%= r.request_type.name %>
+              </div>
+              <div class="text-sm text-slate-500"><%= r.in_tz.strftime("%a %b %d, %l:%M %p") %></div>
+            </div>
+            <%= render "shared/status_badge", status: r.status %>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="p-4 text-sm text-slate-500">No requests yet.</div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="max-w-md mx-auto px-4 py-6 space-y-5">
+  <%= link_to "← #{req.boat.name}", boat_path(req.boat), class: "text-sm text-blue-600" %>
+
+  <div>
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+          <span class="mr-1"><%= req.request_type.icon %></span><%= req.request_type.name %>
+        </h1>
+        <p class="text-sm text-slate-500 mt-0.5">
+          <%= req.in_tz.strftime("%a %b %-d · %-l:%M %p") %>
+        </p>
+        <p class="text-xs text-slate-500"><%= req.location.name %></p>
+      </div>
+      <%= render "shared/status_badge", status: req.status %>
+    </div>
+  </div>
+
+  <% if req.description.present? %>
+    <section class="bg-white border border-slate-200 rounded-2xl p-4">
+      <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-1">Your note</div>
+      <div class="text-slate-800 whitespace-pre-wrap text-sm"><%= req.description %></div>
+    </section>
+  <% end %>
+
+  <% if req.completed? && req.assigned_to&.venmo_handle.present? %>
+    <% handle = req.assigned_to.venmo_handle.delete_prefix("@") %>
+    <a href="https://venmo.com/<%= handle %>?txn=pay&note=Tip%20for%20<%= ERB::Util.url_encode(req.request_type.name) %>"
+       class="block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-2xl">
+      💙 Tip via Venmo
+      <div class="text-xs font-normal opacity-75 mt-0.5">@<%= handle %> · <%= req.assigned_to.name %></div>
+    </a>
+  <% end %>
+
+  <% if req.to_do? %>
+    <%= button_to "Cancel this request", cancel_request_path(req), method: :post,
+          data: { turbo_confirm: "Cancel this request?" },
+          class: "w-full bg-white border border-rose-300 text-rose-700 py-2.5 rounded-2xl text-sm font-medium",
+          form: { class: "block" } %>
+  <% end %>
+
+  <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+    <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
+      <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium">Updates from your marina</div>
+    </div>
+
+    <% if notes.any? %>
+      <ul class="divide-y divide-slate-100">
+        <% notes.each do |n| %>
+          <li class="px-4 py-3">
+            <div class="text-sm text-slate-800 whitespace-pre-wrap"><%= n.body %></div>
+            <div class="text-xs text-slate-500 mt-1">
+              <%= n.author.name %> · <%= n.created_at.in_time_zone(req.location.timezone).strftime("%b %-d, %-l:%M %p") %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="px-4 py-3 text-sm text-slate-500">No updates yet.</p>
+    <% end %>
+
+    <%= form_with url: note_request_path(req), method: :post, local: true,
+          class: "border-t border-slate-100 p-3 bg-slate-50/40" do %>
+      <%= text_area_tag :body, nil, rows: 2, required: true,
+            placeholder: "Reply to your marina…",
+            class: "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+      <%= submit_tag "Send", class: "mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg" %>
+    <% end %>
+  </section>
+</div>

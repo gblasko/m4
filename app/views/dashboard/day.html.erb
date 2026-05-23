@@ -1,0 +1,44 @@
+<% content_for :title, "Day view" %>
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
+    <h1 class="text-xl font-bold text-slate-900">Day</h1>
+    <%= form_with url: dashboard_day_path, method: :get, local: true, class: "flex items-center gap-2" do %>
+      <%= select_tag :location_id,
+            options_from_collection_for_select(@locations, :id, :name, @location.id),
+            class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+            onchange: "this.form.requestSubmit()" %>
+      <%= date_field_tag :date, @date.to_s,
+            class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+            onchange: "this.form.requestSubmit()" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <% if @closed %>
+    <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm">Closed on this day.</div>
+  <% else %>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+      <% (@open_hour..@close_hour).each do |hour| %>
+        <% in_hour = @requests.select { |r| r.in_tz.hour == hour } %>
+        <div class="flex items-start gap-3 px-3 py-2 min-h-[3rem]">
+          <div class="w-16 text-xs text-slate-500 font-mono pt-1"><%= Time.zone.now.change(hour: hour).strftime("%l:%M %p").strip %></div>
+          <div class="flex-1 space-y-1">
+            <% in_hour.each do |r| %>
+              <%= link_to request_path(r), class: "block bg-slate-50 hover:bg-slate-100 border-l-4 rounded p-2 text-sm", style: "border-color: #{r.request_type.color};" do %>
+                <div class="flex justify-between">
+                  <div>
+                    <span class="font-medium"><%= r.request_type.name %></span> · <%= r.boat.name %>
+                    <span class="text-slate-500">(<%= r.in_tz.strftime("%l:%M %p").strip %>)</span>
+                  </div>
+                  <%= render "shared/status_badge", status: r.status %>
+                </div>
+              <% end %>
+            <% end %>
+            <% if in_hour.empty? %><div class="text-xs text-slate-300">—</div><% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

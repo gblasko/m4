@@ -1,0 +1,58 @@
+<%= form_with model: [:admin, type], local: true, class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-2xl" do |f| %>
+  <% if type.errors.any? %>
+    <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm">
+      <ul class="list-disc list-inside">
+        <% type.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Name</span>
+      <%= f.text_field :name, required: true, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Slug (auto)</span>
+      <%= f.text_field :slug, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block md:col-span-2">
+      <span class="text-sm font-medium text-slate-700">Description (shown to customers)</span>
+      <%= f.text_field :description, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Icon (emoji or token)</span>
+      <%= f.text_field :icon, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Color</span>
+      <%= f.color_field :color, class: "mt-1 w-full rounded-lg border border-slate-300 h-10" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Sort order</span>
+      <%= f.number_field :sort_order, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <div class="block">
+      <span class="text-sm font-medium text-slate-700">Applies to storage types</span>
+      <div class="mt-1 flex gap-4">
+        <% Boat::STORAGE_TYPES.each do |st| %>
+          <label class="inline-flex items-center gap-2">
+            <%= check_box_tag "request_type[applicable_storage_types][]", st,
+                  type.applicable_storage_types.include?(st) %>
+            <span class="text-sm"><%= st.humanize %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <label class="inline-flex items-center gap-2">
+    <%= f.check_box :requires_description %><span class="text-sm">Requires description from customer</span>
+  </label>
+  <br>
+  <label class="inline-flex items-center gap-2">
+    <%= f.check_box :is_active %><span class="text-sm">Active</span>
+  </label>
+  <div class="flex gap-3 pt-2">
+    <%= f.submit (type.new_record? ? "Create type" : "Save"), class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+    <%= link_to "Cancel", admin_request_types_path, class: "text-sm text-slate-600" %>
+  </div>
+<% end %>

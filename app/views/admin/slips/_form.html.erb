@@ -1,0 +1,18 @@
+<%= form_with model: [:admin, @location, slip], local: true, class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-lg" do |f| %>
+  <% if slip.errors.any? %>
+    <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm"><%= slip.errors.full_messages.join(", ") %></div>
+  <% end %>
+  <label class="block">
+    <span class="text-sm font-medium text-slate-700">Label</span>
+    <%= f.text_field :label, required: true, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+  </label>
+  <label class="block">
+    <span class="text-sm font-medium text-slate-700">Type</span>
+    <%= f.select :slip_type, Slip::SLIP_TYPES.map { |t| [t.humanize, t] }, {}, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+  </label>
+  <label class="inline-flex items-center gap-2"><%= f.check_box :is_active %><span class="text-sm">Active</span></label>
+  <div class="flex gap-3">
+    <%= f.submit (slip.new_record? ? "Add slip" : "Save"), class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+    <%= link_to "Cancel", admin_location_slips_path(@location), class: "text-sm text-slate-600" %>
+  </div>
+<% end %>

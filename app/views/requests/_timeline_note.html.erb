@@ -1,0 +1,14 @@
+<% public_note = item[:visibility] == "public" %>
+<li class="px-4 py-3 flex items-start gap-3">
+  <div class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs <%= public_note ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">💬</div>
+  <div class="min-w-0 flex-1">
+    <div class="flex items-baseline gap-2 mb-0.5">
+      <span class="text-sm font-medium text-slate-900"><%= item[:by]&.name || "System" %></span>
+      <span class="text-xs text-slate-500"><%= item[:at].in_time_zone(location.timezone).strftime("%b %-d, %-l:%M %p") %></span>
+      <span class="text-[10px] uppercase tracking-wide font-medium <%= public_note ? 'text-emerald-700' : 'text-slate-500' %>">
+        <%= public_note ? "public" : "private" %>
+      </span>
+    </div>
+    <div class="text-sm text-slate-800 whitespace-pre-wrap"><%= item[:body] %></div>
+  </div>
+</li>

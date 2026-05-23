@@ -1,0 +1,7 @@
+<% colors = {
+  "to_do"       => "bg-slate-100 text-slate-700",
+  "in_progress" => "bg-amber-100 text-amber-700",
+  "completed"   => "bg-emerald-100 text-emerald-700",
+  "cancelled"   => "bg-rose-100 text-rose-700"
+} %>
+<span class="inline-block text-xs font-medium px-2 py-1 rounded-full <%= colors[status] || 'bg-slate-100 text-slate-700' %>"><%= status.humanize %></span>

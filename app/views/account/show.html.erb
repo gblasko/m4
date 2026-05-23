@@ -1,0 +1,59 @@
+<% content_for :title, "Account" %>
+<div class="<%= current_user.staff? ? 'max-w-3xl' : 'max-w-md' %> mx-auto px-4 py-6 space-y-6">
+  <h1 class="text-2xl font-bold text-slate-900">Account</h1>
+
+  <%= form_with model: current_user, url: account_path, method: :patch, local: true, class: "bg-white rounded-2xl border border-slate-200 p-5 space-y-4" do |f| %>
+    <% if current_user.errors.any? %>
+      <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm"><%= current_user.errors.full_messages.to_sentence %></div>
+    <% end %>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Name</span>
+      <%= f.text_field :name, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Email</span>
+      <%= f.email_field :email, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Phone</span>
+      <%= f.telephone_field :phone, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Venmo handle</span>
+      <%= f.text_field :venmo_handle, placeholder: "@yourhandle",
+            class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+
+    <fieldset class="border border-slate-200 rounded-lg p-4">
+      <legend class="px-2 text-sm font-medium text-slate-700">Notifications</legend>
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-xs uppercase">
+          <tr><th class="text-left py-1">Event</th><th class="py-1">Email</th><th class="py-1">SMS</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% User::DEFAULT_PREFS.each do |event, defaults| %>
+            <tr>
+              <td class="py-1.5"><%= event.humanize %></td>
+              <td class="text-center py-1.5">
+                <%= check_box_tag "notification_prefs[#{event}][email]", "1",
+                      current_user.prefers?(event, "email") %>
+              </td>
+              <td class="text-center py-1.5">
+                <%= check_box_tag "notification_prefs[#{event}][sms]", "1",
+                      current_user.prefers?(event, "sms") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </fieldset>
+
+    <%= f.submit "Save", class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium" %>
+  <% end %>
+
+  <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-2">
+    <h2 class="text-sm font-medium text-slate-700">Sessions</h2>
+    <%= button_to "Sign out of all devices", logout_everywhere_path, method: :post,
+          class: "border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-sm" %>
+  </div>
+</div>

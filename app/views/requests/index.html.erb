@@ -1,0 +1,36 @@
+<% content_for :title, "My Requests" %>
+<% if current_user.staff? %>
+  <%= render "shared/admin_nav" %>
+<% end %>
+<div class="<%= current_user.staff? ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' : 'max-w-md mx-auto px-4' %> py-6">
+  <h1 class="text-2xl font-bold text-slate-900 mb-4">Requests</h1>
+  <div class="flex gap-2 mb-4 overflow-x-auto">
+    <% [[nil, "All"], ["to_do","To do"], ["in_progress","In progress"], ["completed","Done"], ["cancelled","Cancelled"]].each do |s, label| %>
+      <%= link_to label, requests_path(status: s),
+            class: "px-3 py-1 rounded-full text-sm border #{@status == s ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300'}" %>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
+    <% if @requests.any? %>
+      <% @requests.each do |r| %>
+        <%= link_to request_path(r), class: "block p-4 hover:bg-slate-50" do %>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="font-medium text-slate-900">
+                <span class="mr-1"><%= r.request_type.icon %></span>
+                <%= r.request_type.name %> · <%= r.boat.name %>
+              </div>
+              <div class="text-sm text-slate-500">
+                <%= r.in_tz.strftime("%a %b %d, %l:%M %p") %>
+                <% if current_user.staff? %> · <%= r.customer.name %><% end %>
+              </div>
+            </div>
+            <%= render "shared/status_badge", status: r.status %>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="p-4 text-sm text-slate-500 text-center">No requests yet.</div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Sign in — Marina" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <% if flash[:notice].present? %>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-2 rounded mb-4 text-sm"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="bg-rose-50 border border-rose-200 text-rose-900 px-4 py-2 rounded mb-4 text-sm"><%= flash[:alert] %></div>
+      <% end %>
+      <%= yield %>
+    </div>
+  </body>
+</html>

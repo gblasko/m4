@@ -1,0 +1,18 @@
+<nav class="bg-slate-900 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
+    <div class="flex items-center gap-6">
+      <%= link_to "Marina Ops", dashboard_path, class: "font-semibold tracking-tight" %>
+      <%= link_to "Dashboard", dashboard_path, class: "text-sm text-slate-200 hover:text-white" %>
+      <%= link_to "Day", dashboard_day_path, class: "text-sm text-slate-200 hover:text-white" %>
+      <%= link_to "Week", dashboard_week_path, class: "text-sm text-slate-200 hover:text-white" %>
+      <% if current_user.manager? %>
+        <%= link_to "Admin", admin_root_path, class: "text-sm text-slate-200 hover:text-white" %>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+      <span class="text-slate-300"><%= current_user.name %> · <%= current_user.role %></span>
+      <%= button_to "Sign out", logout_path, method: :delete,
+            class: "text-slate-200 hover:text-white", form: { class: "inline" } %>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,28 @@
+<% content_for :title, "Admin" %>
+<%= render "shared/admin_nav" %>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-2xl font-bold text-slate-900 mb-6">Overview</h1>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <% [
+      ["Customers", @customers_count, admin_customers_path],
+      ["Staff", @staff_count, admin_users_path],
+      ["Open requests", @open_requests, dashboard_path],
+      ["Scheduled today", @today_requests, dashboard_path],
+    ].each do |label, value, path| %>
+      <%= link_to path, class: "block bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-500 transition" do %>
+        <div class="text-3xl font-bold text-slate-900"><%= value %></div>
+        <div class="text-sm text-slate-500 mt-1"><%= label %></div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <h2 class="text-lg font-semibold text-slate-900 mt-10 mb-3">Locations</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% @locations.each do |loc| %>
+      <%= link_to admin_location_path(loc), class: "block bg-white rounded-xl border border-slate-200 p-4 hover:border-blue-500" do %>
+        <div class="font-semibold text-slate-900"><%= loc.name %></div>
+        <div class="text-sm text-slate-500"><%= loc.address %></div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

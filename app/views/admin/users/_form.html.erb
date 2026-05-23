@@ -1,0 +1,28 @@
+<%= form_with model: [:admin, user], local: true, class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-2xl" do |f| %>
+  <% if user.errors.any? %>
+    <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm"><%= user.errors.full_messages.join(", ") %></div>
+  <% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Name</span>
+      <%= f.text_field :name, required: true, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Email</span>
+      <%= f.email_field :email, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Phone</span>
+      <%= f.telephone_field :phone, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Role</span>
+      <%= f.select :role, [["Manager", "manager"], ["Helper", "helper"]], {}, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+  </div>
+  <label class="inline-flex items-center gap-2"><%= f.check_box :is_active %><span class="text-sm">Active</span></label>
+  <div class="flex gap-3 pt-2">
+    <%= f.submit (user.new_record? ? "Add staff" : "Save"), class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+    <%= link_to "Cancel", admin_users_path, class: "text-sm text-slate-600" %>
+  </div>
+<% end %>

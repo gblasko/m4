@@ -1,0 +1,24 @@
+<% if slots.empty? %>
+  <p class="col-span-3 text-sm text-slate-500 text-center py-4">Closed on this day.</p>
+<% elsif slots.none? { |s| !s[:past] } %>
+  <p class="col-span-3 text-sm text-slate-500 text-center py-4">No more openings today — try another date.</p>
+<% else %>
+  <% slots.each do |s| %>
+    <% if s[:past] %>
+      <button type="button" disabled
+              class="border border-slate-200 bg-slate-50 text-slate-300 rounded-lg py-2 text-sm cursor-not-allowed">
+        <%= s[:label] %>
+      </button>
+    <% else %>
+      <button type="button"
+              data-action="click->time-picker#selectSlot"
+              data-time="<%= s[:time] %>"
+              class="border-2 border-slate-200 hover:border-blue-400 rounded-lg py-2 text-sm relative">
+        <span class="font-medium"><%= s[:label] %></span>
+        <% if s[:full] %>
+          <span class="absolute -top-1.5 -right-1.5 text-[9px] uppercase font-semibold bg-amber-500 text-white px-1.5 py-0.5 rounded-full">busy</span>
+        <% end %>
+      </button>
+    <% end %>
+  <% end %>
+<% end %>

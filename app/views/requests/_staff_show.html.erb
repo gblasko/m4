@@ -1,0 +1,153 @@
+<%# Helper: pick the next primary status action, if any %>
+<% primary_action = case req.status
+   when "to_do"       then { to: "in_progress", label: "Start work", color: "bg-amber-500 hover:bg-amber-600" }
+   when "in_progress" then req.assigned_to ?
+                          { to: "completed", label: "Mark complete", color: "bg-emerald-600 hover:bg-emerald-700" } :
+                          { disabled: true, label: "Complete (assign first)", color: "bg-slate-200 text-slate-500 cursor-not-allowed" }
+   end %>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <%= link_to "← Dashboard", dashboard_path, class: "text-sm text-slate-500 hover:text-slate-900" %>
+
+  <div class="mt-3 flex items-start gap-3">
+    <div class="text-3xl leading-none mt-1"><%= req.request_type.icon %></div>
+    <div class="min-w-0 flex-1">
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight"><%= req.request_type.name %></h1>
+      <p class="text-sm text-slate-500 mt-0.5">
+        <%= req.boat.name %>
+        · <%= req.in_tz.strftime("%a %b %-d · %-l:%M %p") %>
+        · <%= req.location.name %>
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+
+    <!-- ============ LEFT: content ============ -->
+    <div class="space-y-4 min-w-0">
+      <% if req.description.present? %>
+        <section class="bg-white border border-slate-200 rounded-xl p-4">
+          <div class="text-xs uppercase tracking-wide text-slate-500 font-medium mb-1">From customer</div>
+          <div class="text-slate-800 whitespace-pre-wrap"><%= req.description %></div>
+        </section>
+      <% end %>
+
+      <section>
+        <h2 class="text-sm font-semibold text-slate-700 px-1 mb-2">Activity</h2>
+        <div class="bg-white border border-slate-200 rounded-xl">
+          <ol class="divide-y divide-slate-100">
+            <%= render "timeline_event_initial", req: req %>
+            <% timeline.each do |item| %>
+              <% if item[:kind] == :note %>
+                <%= render "timeline_note", item: item, location: req.location %>
+              <% else %>
+                <%= render "timeline_event", item: item, location: req.location %>
+              <% end %>
+            <% end %>
+          </ol>
+
+          <%= form_with url: note_request_path(req), method: :post, local: true,
+                class: "border-t border-slate-200 p-3 bg-slate-50/40 rounded-b-xl" do %>
+            <%= text_area_tag :body, nil, rows: 2, required: true,
+                  placeholder: "Add an update…",
+                  class: "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none" %>
+            <div class="mt-2 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 text-xs text-slate-600">
+                <label class="inline-flex items-center gap-1.5">
+                  <%= radio_button_tag :visibility, "private", true, class: "h-3.5 w-3.5" %>
+                  <span>Private (staff)</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5">
+                  <%= radio_button_tag :visibility, "public", false, class: "h-3.5 w-3.5" %>
+                  <span>Public (customer)</span>
+                </label>
+              </div>
+              <%= submit_tag "Post", class: "bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ RIGHT: metadata sidebar ============ -->
+    <aside class="space-y-5 lg:sticky lg:top-20 self-start">
+      <div>
+        <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-1.5">Status</div>
+        <div><%= render "shared/status_badge", status: req.status %></div>
+      </div>
+
+      <% if primary_action && !req.cancelled? && !req.completed? %>
+        <div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-1.5">Quick actions</div>
+          <% if primary_action[:disabled] %>
+            <button disabled class="block w-full text-sm font-medium py-2 rounded-lg <%= primary_action[:color] %>">
+              <%= primary_action[:label] %>
+            </button>
+          <% else %>
+            <%= button_to primary_action[:label],
+                  request_status_path(req, to: primary_action[:to]), method: :patch,
+                  class: "block w-full text-white text-sm font-medium py-2 rounded-lg #{primary_action[:color]}",
+                  form: { class: "block" } %>
+          <% end %>
+          <% if req.in_progress? %>
+            <%= button_to "Move back to To do",
+                  request_status_path(req, to: "to_do"), method: :patch,
+                  class: "block w-full mt-2 text-slate-600 hover:text-slate-900 text-xs py-1",
+                  form: { class: "block" } %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form_with url: request_assign_path(req), method: :patch, local: true, class: "space-y-1" do |f| %>
+        <label class="block text-[11px] uppercase tracking-wide text-slate-500 font-medium">Assignee</label>
+        <div class="flex gap-2">
+          <%= select_tag :assigned_to_id,
+                options_from_collection_for_select(current_organization.users.staff.active.order(:name), :id, :name, req.assigned_to_id),
+                include_blank: "— Unassigned —",
+                class: "flex-1 min-w-0 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" %>
+          <%= f.submit "Save", class: "shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm px-3 py-1.5 rounded-lg" %>
+        </div>
+      <% end %>
+
+      <div class="border-t border-slate-200 pt-4 space-y-3 text-sm">
+        <div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-0.5">Customer</div>
+          <div class="text-slate-900"><%= req.customer.name %></div>
+          <% if req.customer.email.present? %>
+            <a href="mailto:<%= req.customer.email %>" class="text-blue-600 hover:underline text-xs"><%= req.customer.email %></a>
+          <% end %>
+          <% if req.customer.phone.present? %>
+            <div class="text-xs"><a href="tel:<%= req.customer.phone %>" class="text-blue-600 hover:underline"><%= req.customer.phone %></a></div>
+          <% end %>
+        </div>
+        <div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-0.5">Boat</div>
+          <div class="text-slate-900"><%= req.boat.name %></div>
+          <% if req.boat.descriptor.present? && req.boat.descriptor != req.boat.name %>
+            <div class="text-xs text-slate-500"><%= req.boat.descriptor %></div>
+          <% end %>
+          <div class="text-xs text-slate-500">
+            <%= req.boat.storage_type.humanize %><% if req.boat.slip %> · Slip <%= req.boat.slip.label %><% end %>
+          </div>
+        </div>
+        <div>
+          <div class="text-[11px] uppercase tracking-wide text-slate-500 font-medium mb-0.5">Location</div>
+          <div class="text-slate-900"><%= req.location.name %></div>
+        </div>
+      </div>
+
+      <% unless req.cancelled? || req.completed? %>
+        <details class="border-t border-slate-200 pt-3">
+          <summary class="text-xs text-slate-500 hover:text-rose-700 cursor-pointer select-none">More actions</summary>
+          <div class="mt-2">
+            <%= button_to "Cancel this request",
+                  cancel_request_path(req), method: :post,
+                  data: { turbo_confirm: "Cancel this request? The customer will be notified." },
+                  class: "block w-full text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs py-2 rounded-lg",
+                  form: { class: "block" } %>
+          </div>
+        </details>
+      <% end %>
+    </aside>
+  </div>
+</div>

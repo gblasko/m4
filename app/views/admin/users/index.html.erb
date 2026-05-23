@@ -1,0 +1,32 @@
+<%= render "shared/admin_nav" %>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Staff</h1>
+    <%= link_to "+ Add staff", new_admin_user_path, class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr><th class="text-left px-4 py-2">Name</th><th class="text-left px-4 py-2">Email</th><th class="text-left px-4 py-2">Role</th><th class="text-left px-4 py-2">Active</th><th></th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% @users.each do |u| %>
+          <tr>
+            <td class="px-4 py-2 font-medium"><%= u.name %></td>
+            <td class="px-4 py-2 text-slate-600"><%= u.email %></td>
+            <td class="px-4 py-2"><%= u.role.humanize %></td>
+            <td class="px-4 py-2"><%= u.is_active? ? "✓" : "—" %></td>
+            <td class="px-4 py-2 text-right">
+              <%= link_to "Edit", edit_admin_user_path(u), class: "text-blue-600 text-xs" %>
+              <% unless u == current_user %>
+                <%= button_to "Deactivate", admin_user_path(u), method: :delete,
+                      data: { turbo_confirm: "Deactivate this staff member?" },
+                      form: { class: "inline" }, class: "text-rose-600 text-xs ml-2" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
