@@ -13,7 +13,11 @@
 
 databases:
   - name: marina-db
-    plan: starter
+    # Render renamed Postgres plans in 2024 — legacy "starter" is no longer
+    # accepted on new databases. Replacement tiers: free (90-day expiry),
+    # basic_256mb ($6/mo, 256MB RAM, 1GB storage — equivalent to old starter),
+    # basic_1gb ($19/mo), pro_4gb ($95/mo), etc.
+    plan: basic_256mb
     postgresMajorVersion: 16
 
 services:
