@@ -1,0 +1,41 @@
+<% content_for :title, "Week view" %>
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
+    <h1 class="text-xl font-bold text-slate-900">Week</h1>
+    <%= form_with url: dashboard_week_path, method: :get, local: true, class: "flex items-center gap-2" do %>
+      <%= select_tag :location_id,
+            options_from_collection_for_select(@locations, :id, :name, @location.id),
+            class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+            onchange: "this.form.requestSubmit()" %>
+      <%= date_field_tag :start_date, @start_date.to_s,
+            class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+            onchange: "this.form.requestSubmit()" %>
+    <% end %>
+    <div class="ml-auto flex gap-2 text-sm">
+      <%= link_to "← Prev", dashboard_week_path(location_id: @location.id, start_date: (@start_date - 7.days).to_s),
+            class: "px-2 py-1 border border-slate-300 rounded" %>
+      <%= link_to "Next →", dashboard_week_path(location_id: @location.id, start_date: (@start_date + 7.days).to_s),
+            class: "px-2 py-1 border border-slate-300 rounded" %>
+    </div>
+  </div>
+</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="grid grid-cols-7 gap-3">
+    <% @week_dates.each do |d| %>
+      <%= link_to dashboard_day_path(location_id: @location.id, date: d.to_s),
+            class: "block bg-white rounded-xl border border-slate-200 p-3 hover:border-blue-500 text-center #{d == Date.current ? 'ring-2 ring-blue-500' : ''}" do %>
+        <div class="text-xs uppercase text-slate-500"><%= d.strftime("%a") %></div>
+        <div class="text-2xl font-bold text-slate-900 mt-1"><%= d.day %></div>
+        <div class="mt-1 text-xs text-slate-500"><%= d.strftime("%b") %></div>
+        <div class="mt-2">
+          <% n = @counts_by_day[d] %>
+          <% if n > 0 %>
+            <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"><%= n %> req</span>
+          <% else %>
+            <span class="text-xs text-slate-300">—</span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

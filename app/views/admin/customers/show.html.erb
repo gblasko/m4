@@ -1,0 +1,75 @@
+<%= render "shared/admin_nav" %>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900"><%= @customer.name %></h1>
+      <p class="text-sm text-slate-500"><%= @customer.email %> · <%= @customer.phone %></p>
+    </div>
+    <div class="flex gap-2">
+      <%= link_to "Edit", edit_admin_customer_path(@customer), class: "border border-slate-300 px-3 py-1.5 rounded-lg text-sm" %>
+      <%= button_to "Remove", admin_customer_path(@customer), method: :delete,
+            data: { turbo_confirm: "Remove this customer?" },
+            class: "border border-rose-300 text-rose-700 px-3 py-1.5 rounded-lg text-sm",
+            form: { class: "inline" } %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-slate-900">Boats</h2>
+      <%= link_to "+ Add boat", new_admin_customer_boat_path(@customer),
+            class: "text-sm text-blue-600 hover:underline" %>
+    </div>
+    <% if @boats.any? %>
+      <table class="min-w-full text-sm">
+        <thead class="text-slate-600">
+          <tr>
+            <th class="text-left py-1">Name</th>
+            <th class="text-left py-1">Type</th>
+            <th class="text-left py-1">Location</th>
+            <th class="text-left py-1">Slip</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% @boats.each do |b| %>
+            <tr>
+              <td class="py-1.5 font-medium text-slate-900"><%= b.name %></td>
+              <td class="py-1.5"><%= b.storage_type.humanize %></td>
+              <td class="py-1.5"><%= b.location.name %></td>
+              <td class="py-1.5"><%= b.slip&.label || "—" %></td>
+              <td class="py-1.5 text-right">
+                <%= link_to "Edit", edit_admin_customer_boat_path(@customer, b),
+                      class: "text-blue-600 hover:underline text-xs" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-sm text-slate-500">No boats yet.</p>
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <h2 class="font-semibold text-slate-900 mb-3">Recent requests</h2>
+    <% if @recent_requests.any? %>
+      <ul class="divide-y divide-slate-100">
+        <% @recent_requests.each do |r| %>
+          <li class="py-2 flex justify-between text-sm">
+            <span>
+              <span class="font-medium"><%= r.request_type.name %></span> ·
+              <%= r.boat.name %>
+            </span>
+            <span class="text-slate-500">
+              <%= r.scheduled_for.in_time_zone(r.location.timezone).strftime("%b %d %l:%M %p") %> ·
+              <%= r.status.humanize %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-slate-500">No requests yet.</p>
+    <% end %>
+  </div>
+</div>

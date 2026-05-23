@@ -1,0 +1,53 @@
+<%= form_with model: [:admin, location], local: true, class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-3xl" do |f| %>
+  <% if location.errors.any? %>
+    <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm">
+      <ul class="list-disc list-inside">
+        <% location.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Name</span>
+      <%= f.text_field :name, required: true, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Slug</span>
+      <%= f.text_field :slug, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2", placeholder: "auto from name" %>
+    </label>
+    <label class="block md:col-span-2">
+      <span class="text-sm font-medium text-slate-700">Address</span>
+      <%= f.text_field :address, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Timezone</span>
+      <%= f.select :timezone, ActiveSupport::TimeZone.us_zones.map { |z| [z.name, z.tzinfo.name] }, {}, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Soft cap per hour</span>
+      <%= f.number_field :soft_cap_per_hour, min: 1, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </label>
+  </div>
+
+  <fieldset class="border border-slate-200 rounded-lg p-4">
+    <legend class="px-2 text-sm font-medium text-slate-700">Hours</legend>
+    <% day_names = %w[Sun Mon Tue Wed Thu Fri Sat] %>
+    <div class="space-y-2">
+      <%= f.fields_for :location_hours, location.location_hours.sort_by(&:day_of_week) do |h| %>
+        <div class="grid grid-cols-12 items-center gap-2">
+          <div class="col-span-2 text-sm text-slate-700"><%= day_names[h.object.day_of_week] %></div>
+          <%= h.hidden_field :day_of_week %>
+          <div class="col-span-3"><%= h.time_field :open_time, class: "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm" %></div>
+          <div class="col-span-3"><%= h.time_field :close_time, class: "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm" %></div>
+          <label class="col-span-4 inline-flex items-center gap-2 text-sm"><%= h.check_box :closed %> Closed</label>
+        </div>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <label class="inline-flex items-center gap-2"><%= f.check_box :is_active %><span class="text-sm">Active</span></label>
+  <div class="flex gap-3 pt-2">
+    <%= f.submit (location.new_record? ? "Create location" : "Save"), class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+    <%= link_to "Cancel", admin_locations_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+  </div>
+<% end %>

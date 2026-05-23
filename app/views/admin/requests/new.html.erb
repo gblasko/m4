@@ -1,0 +1,138 @@
+<% content_for :title, "New request (staff)" %>
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-slate-900">New request <span class="text-sm font-normal text-slate-500">(on behalf of a customer)</span></h1>
+    <%= link_to "← Dashboard", dashboard_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+  </div>
+</div>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+  <% if @customers.empty? %>
+    <div class="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-xl text-sm">
+      No customers in the system yet.
+      <%= link_to "Add a customer", new_admin_customer_path, class: "underline" %> first.
+    </div>
+  <% end %>
+
+  <!-- Step 1+2: selectors. Use GET form that auto-reloads on change so each step
+       reveals the next once selected. Keeps the page resilient and JS-free. -->
+  <%= form_with url: new_admin_request_path, method: :get, scope: nil, local: true,
+        class: "bg-white border border-slate-200 rounded-xl p-5 space-y-4" do %>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Customer</label>
+      <%= select_tag :customer_id,
+            options_from_collection_for_select(@customers, :id, ->(c) { "#{c.name} — #{c.email.presence || c.phone}" }, @customer&.id),
+            include_blank: "Select customer…",
+            onchange: "this.form.requestSubmit()",
+            class: "w-full rounded-lg border border-slate-300 px-3 py-2" %>
+    </div>
+
+    <% if @customer %>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Boat</label>
+        <% if @boats.any? %>
+          <%= select_tag :boat_id,
+                options_from_collection_for_select(@boats, :id, ->(b) { "#{b.name} (#{b.location.name} · #{b.storage_type.humanize})" }, @boat&.id),
+                include_blank: "Select boat…",
+                onchange: "this.form.requestSubmit()",
+                class: "w-full rounded-lg border border-slate-300 px-3 py-2" %>
+        <% else %>
+          <p class="text-sm text-slate-600">
+            <%= @customer.name %> has no boats on file.
+            <%= link_to "Add one →", new_admin_customer_boat_path(@customer), class: "text-blue-600 hover:underline" %>
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <!-- Step 3: full request form once a boat is chosen -->
+  <% if @boat %>
+    <%= form_with url: admin_requests_path, method: :post, model: @request, local: true,
+          class: "bg-white border border-slate-200 rounded-xl p-5 space-y-6" do |f| %>
+      <% if @request.errors.any? %>
+        <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm">
+          <%= @request.errors.full_messages.to_sentence %>
+        </div>
+      <% end %>
+
+      <%= hidden_field_tag "request[customer_id]", @customer.id %>
+      <%= hidden_field_tag "request[boat_id]",     @boat.id %>
+
+      <div class="bg-slate-50 -mx-5 -mt-5 px-5 py-3 border-b border-slate-100 text-sm">
+        Booking for
+        <span class="font-medium text-slate-900"><%= @customer.name %></span>
+        ·
+        <span class="font-medium text-slate-900"><%= @boat.name %></span>
+        ·
+        <span class="text-slate-600"><%= @boat.location.name %></span>
+      </div>
+
+      <div>
+        <div class="text-sm font-medium text-slate-700 mb-2">Service</div>
+        <% if @types.any? %>
+          <div class="grid grid-cols-3 gap-2">
+            <% @types.each_with_index do |t, i| %>
+              <label class="block cursor-pointer">
+                <%= f.radio_button :request_type_id, t.id, required: true,
+                      checked: @request.request_type_id == t.id || (i == 0 && @request.request_type_id.blank?),
+                      class: "sr-only peer" %>
+                <div class="border-2 border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 rounded-xl p-3 text-center">
+                  <div class="text-2xl"><%= t.icon %></div>
+                  <div class="text-sm font-medium mt-1"><%= t.name %></div>
+                  <% if t.requires_description? %>
+                    <div class="text-[10px] text-slate-500 mt-0.5">notes required</div>
+                  <% end %>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-sm text-rose-700">No active services apply to this boat's storage type. Configure types in <%= link_to "Admin → Request Types", admin_request_types_path, class: "underline" %>.</p>
+        <% end %>
+      </div>
+
+      <div data-controller="time-picker"
+           data-time-picker-location-id-value="<%= @boat.location_id %>"
+           data-time-picker-step-value="30"
+           class="space-y-4">
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Date</label>
+          <input type="date"
+                 data-time-picker-target="date"
+                 data-action="change->time-picker#dateChanged"
+                 value="<%= @initial_date.to_s %>"
+                 min="<%= @min_date.to_s %>"
+                 max="<%= @max_date.to_s %>"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-slate-700">Time</label>
+            <span class="text-xs text-slate-500" data-time-picker-target="hint">30-minute slots</span>
+          </div>
+          <div data-time-picker-target="slots" class="grid grid-cols-4 gap-2">
+            <%= render "requests/slot_buttons", slots: @initial_slots %>
+          </div>
+        </div>
+
+        <%= f.hidden_field :scheduled_for, "data-time-picker-target": "selected" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Notes from the call (optional)</label>
+        <%= f.text_area :description, rows: 3, placeholder: "e.g. 'Called in at 9am — wants fueling before the holiday weekend'",
+              class: "w-full rounded-lg border border-slate-300 px-3 py-2" %>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+        <%= link_to "Cancel", dashboard_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+        <%= f.submit "Create request",
+              class: "bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Render build script — installs deps, precompiles assets, runs migrations + seeds.
+set -o errexit
+
+bundle install
+
+bundle exec rails assets:precompile
+bundle exec rails assets:clean
+
+bundle exec rails db:prepare
+# Seeds are idempotent; safe to run on every deploy
+bundle exec rails db:seed

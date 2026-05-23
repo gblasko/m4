@@ -1,0 +1,21 @@
+<% content_for :title, "My Boats" %>
+<div class="max-w-md mx-auto px-4 py-6">
+  <header class="mb-5">
+    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">My Boats</h1>
+    <p class="text-sm text-slate-500 mt-1">Tap a boat to view details, or request a service.</p>
+  </header>
+
+  <% if @boats.any? %>
+    <ul class="space-y-3">
+      <% @boats.each do |boat| %>
+        <%= render "boat_card", boat: boat, upcoming: @next_request_by_boat[boat.id] %>
+      <% end %>
+    </ul>
+  <% else %>
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+      <div class="text-4xl mb-2">⚓</div>
+      <p class="text-slate-700 font-medium">No boats on file yet</p>
+      <p class="text-sm text-slate-500 mt-1">Contact your marina to have a boat added.</p>
+    </div>
+  <% end %>
+</div>

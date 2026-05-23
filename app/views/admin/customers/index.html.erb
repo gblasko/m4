@@ -1,0 +1,39 @@
+<% content_for :title, "Customers" %>
+<%= render "shared/admin_nav" %>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Customers</h1>
+    <%= link_to "+ New customer", new_admin_customer_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+  </div>
+  <%= form_with url: admin_customers_path, method: :get, local: true, class: "mb-4" do |f| %>
+    <%= f.text_field :q, value: @q, placeholder: "Search by name, email, or phone",
+          class: "w-full md:w-96 rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+  <% end %>
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="text-left px-4 py-2">Name</th>
+          <th class="text-left px-4 py-2">Email</th>
+          <th class="text-left px-4 py-2">Phone</th>
+          <th class="text-left px-4 py-2">Boats</th>
+          <th class="text-left px-4 py-2">Active</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% @customers.each do |c| %>
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-2"><%= link_to c.name, admin_customer_path(c), class: "text-blue-600 hover:underline font-medium" %></td>
+            <td class="px-4 py-2 text-slate-600"><%= c.email %></td>
+            <td class="px-4 py-2 text-slate-600"><%= c.phone %></td>
+            <td class="px-4 py-2"><%= c.boats.count %></td>
+            <td class="px-4 py-2"><%= c.is_active? ? "✓" : "—" %></td>
+          </tr>
+        <% end %>
+        <% if @customers.none? %>
+          <tr><td colspan="5" class="px-4 py-6 text-slate-500 text-center">No customers yet</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<% content_for :title, "#{@request.request_type.name} — #{@request.boat.name}" %>
+<% if current_user.staff? %>
+  <%= render "staff_show", req: @request, timeline: @timeline %>
+<% else %>
+  <%= render "customer_show", req: @request, notes: @notes %>
+<% end %>

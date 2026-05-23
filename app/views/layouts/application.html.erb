@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Marina" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Marina">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <% if signed_in? && current_user.staff? %>
+      <%= render "shared/staff_nav" %>
+    <% elsif signed_in? %>
+      <%= render "shared/customer_nav" %>
+    <% end %>
+
+    <% if flash[:notice].present? %>
+      <div class="bg-emerald-50 border-b border-emerald-200 text-emerald-900 px-4 py-2 text-sm"><%= flash[:notice] %></div>
+    <% end %>
+    <% if flash[:alert].present? %>
+      <div class="bg-rose-50 border-b border-rose-200 text-rose-900 px-4 py-2 text-sm"><%= flash[:alert] %></div>
+    <% end %>
+
+    <main class="<%= signed_in? ? 'pb-12' : '' %>">
+      <%= yield %>
+    </main>
+  </body>
+</html>

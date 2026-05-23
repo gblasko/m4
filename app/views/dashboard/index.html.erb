@@ -1,0 +1,108 @@
+<% content_for :title, "Dashboard" %>
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
+    <h1 class="text-xl font-bold text-slate-900">Dashboard</h1>
+    <% if @location %>
+      <%= form_with url: dashboard_path, method: :get, local: true, class: "flex items-center gap-2 flex-wrap" do %>
+        <%= select_tag :location_id,
+              options_from_collection_for_select(@locations, :id, :name, @location.id),
+              class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+              onchange: "this.form.requestSubmit()" %>
+        <div class="flex items-center gap-1">
+          <%= date_field_tag :date, @date&.to_s,
+                placeholder: "All dates",
+                class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+                onchange: "this.form.requestSubmit()" %>
+          <% if @date %>
+            <%= link_to "Clear",
+                  dashboard_path(location_id: @location.id, assignee_id: @assignee_id),
+                  class: "text-xs text-slate-500 hover:text-slate-900 underline" %>
+          <% end %>
+        </div>
+        <%= select_tag :assignee_id,
+              options_for_select([["All assignees", nil]] + @helpers.map { |h| [h.name, h.id] }, @assignee_id),
+              class: "rounded-lg border border-slate-300 text-sm px-2 py-1",
+              onchange: "this.form.requestSubmit()" %>
+      <% end %>
+    <% end %>
+    <%= link_to new_admin_request_path,
+          class: "ml-auto inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg" do %>
+      <span>+</span><span>Take a request</span>
+    <% end %>
+  </div>
+</div>
+
+<% unless @location %>
+  <div class="max-w-7xl mx-auto px-4 py-12 text-center">
+    <p class="text-slate-600">No locations configured yet.</p>
+    <% if current_user.manager? %>
+      <%= link_to "Add a location", new_admin_location_path,
+            class: "inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+    <% end %>
+  </div>
+<% else %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+     data-controller="dashboard-stream kanban"
+     data-dashboard-stream-org-id-value="<%= current_organization.id %>">
+  <p class="text-xs text-slate-500 mb-2">
+    <% if @date %>
+      Showing <%= @date.strftime("%a, %b %-d") %> · <%= link_to "show all dates", dashboard_path(location_id: @location.id, assignee_id: @assignee_id), class: "text-blue-600 hover:underline" %>.
+      Drag cards between columns to change status.
+    <% else %>
+      Showing all dates · completed clipped to last 30 days. Drag cards between columns to change status.
+    <% end %>
+  </p>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <% [["to_do", "To Do", "border-slate-300"],
+        ["in_progress", "In Progress", "border-amber-400"],
+        ["completed", "Completed", "border-emerald-400"]].each do |status, label, accent| %>
+      <div class="bg-slate-100 rounded-xl p-3 border-t-4 <%= accent %>">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="font-semibold text-slate-800"><%= label %></h2>
+          <span class="text-xs text-slate-500" data-kanban-count><%= @columns[status].size %></span>
+        </div>
+        <div class="space-y-2 min-h-[200px]"
+             data-kanban-target="column"
+             data-kanban-status="<%= status %>">
+          <% @columns[status].each do |r| %>
+            <a href="<%= request_path(r) %>"
+               data-request-id="<%= r.id %>"
+               class="block bg-white rounded-lg border border-slate-200 p-3 hover:border-blue-500 shadow-sm cursor-grab active:cursor-grabbing select-none">
+              <% in_loc = r.in_tz %>
+              <% same_day_filter = @date && in_loc.to_date == @date %>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-slate-500">
+                  <% if same_day_filter %>
+                    <%= in_loc.strftime("%-l:%M %p") %>
+                  <% else %>
+                    <% today = Date.current.in_time_zone(@location.timezone).to_date %>
+                    <% day_label = case in_loc.to_date
+                       when today then "Today"
+                       when today + 1 then "Tomorrow"
+                       when today - 1 then "Yesterday"
+                       else in_loc.strftime("%a %b %-d")
+                       end %>
+                    <span class="font-medium text-slate-700"><%= day_label %></span>
+                    · <%= in_loc.strftime("%-l:%M %p") %>
+                  <% end %>
+                </span>
+                <span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: <%= r.request_type.color %>"></span>
+              </div>
+              <div class="font-medium text-slate-900 text-sm leading-tight">
+                <span class="mr-1"><%= r.request_type.icon %></span><%= r.request_type.name %>
+              </div>
+              <div class="text-xs text-slate-600 mt-1"><%= r.boat.name %> · <%= r.customer.name %></div>
+              <% if r.assigned_to %>
+                <div class="text-xs text-blue-700 mt-1">👤 <%= r.assigned_to.name %></div>
+              <% else %>
+                <div class="text-xs text-slate-400 mt-1">unassigned</div>
+              <% end %>
+            </a>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% end %>

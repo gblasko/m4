@@ -1,0 +1,33 @@
+<%= render "shared/admin_nav" %>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Slips — <%= @location.name %></h1>
+      <%= link_to "← Back to location", admin_location_path(@location), class: "text-sm text-blue-600 hover:underline" %>
+    </div>
+    <%= link_to "+ Add slip", new_admin_location_slip_path(@location), class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr><th class="text-left px-4 py-2">Label</th><th class="text-left px-4 py-2">Type</th><th class="text-left px-4 py-2">Active</th><th></th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% @slips.each do |s| %>
+          <tr>
+            <td class="px-4 py-2 font-medium"><%= s.label %></td>
+            <td class="px-4 py-2"><%= s.slip_type.humanize %></td>
+            <td class="px-4 py-2"><%= s.is_active? ? "✓" : "—" %></td>
+            <td class="px-4 py-2 text-right">
+              <%= link_to "Edit", edit_admin_location_slip_path(@location, s), class: "text-blue-600 text-xs" %>
+              <%= button_to "Remove", admin_location_slip_path(@location, s), method: :delete,
+                    data: { turbo_confirm: "Remove slip?" },
+                    form: { class: "inline" }, class: "text-rose-600 text-xs ml-2" %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @slips.none? %><tr><td colspan="4" class="px-4 py-6 text-slate-500 text-center">No slips</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

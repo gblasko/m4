@@ -1,0 +1,32 @@
+<div class="bg-white rounded-2xl shadow-xl p-8">
+  <div class="text-center mb-6">
+    <div class="mx-auto w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white text-2xl">✓</div>
+    <h1 class="mt-3 text-2xl font-bold text-slate-900">
+      <%= @channel == "sms" ? "Check your phone" : "Check your inbox" %>
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">
+      If an account exists, we sent you a
+      <%= @channel == "sms" ? "6-digit code" : "sign-in link" %>.
+    </p>
+  </div>
+
+  <% if @channel == "sms" %>
+    <%= form_with url: verify_code_path, local: true, class: "space-y-4" do |f| %>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Verification code</label>
+        <%= f.text_field :code, required: true, autofocus: true, inputmode: "numeric",
+              autocomplete: "one-time-code", maxlength: 6, pattern: "[0-9]{6}",
+              class: "w-full rounded-lg border border-slate-300 px-3 py-3 text-center text-xl tracking-widest font-mono focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" %>
+      </div>
+      <%= f.submit "Verify", class: "w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition" %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-slate-600 text-center">
+      Click the link in your email to finish signing in. The link expires in 15 minutes.
+    </p>
+  <% end %>
+
+  <p class="text-center mt-6">
+    <%= link_to "Use a different email or phone", login_path, class: "text-sm text-blue-600 hover:text-blue-800" %>
+  </p>
+</div>
