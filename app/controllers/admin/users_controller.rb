@@ -47,8 +47,16 @@ module Admin
       @user = current_organization.users.staff.find(params[:id])
     end
 
+    STAFF_ROLES = %w[manager helper].freeze
+
     def user_params
-      params.require(:user).permit(:name, :email, :phone, :role, :is_active)
+      # Don't permit :role for mass assignment — validate it explicitly against
+      # an allowlist so a tampered form can't push "customer" (or anything else)
+      # through this staff-management endpoint.
+      perm = params.require(:user).permit(:name, :email, :phone, :is_active)
+      submitted_role = params.dig(:user, :role).to_s
+      perm[:role] = submitted_role if STAFF_ROLES.include?(submitted_role)
+      perm
     end
   end
 end
