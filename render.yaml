@@ -15,14 +15,14 @@
 
 databases:
   - name: marina-db
-    # Render's current Postgres plans (hyphens, not underscores; 256MB tier
-    # was retired and is no longer offered for new databases):
-    #   free        — $0,    256MB RAM, 1GB storage, expires after 90 days
-    #   basic-1gb   — $19/mo, 1GB RAM,   10GB storage
-    #   basic-4gb   — $45/mo, 4GB RAM,   40GB storage
-    #   pro-4gb     — $95/mo, 4GB RAM,   100GB storage  (HA, more connections)
+    # Render's current Postgres plans (hyphens, not underscores):
+    #   free         — $0,    256MB RAM, 1GB storage, expires after 90 days
+    #   basic-256mb  — $6/mo, 256MB RAM, 1GB storage
+    #   basic-1gb    — $19/mo, 1GB RAM,  10GB storage
+    #   basic-4gb    — $45/mo, 4GB RAM,  40GB storage
+    #   pro-4gb      — $95/mo, 4GB RAM,  100GB storage  (HA, more connections)
     # See https://render.com/docs/yaml-spec#databases for the full list.
-    plan: basic-1gb
+    plan: basic-256mb
     postgresMajorVersion: 16
 
 services:
