@@ -53,16 +53,15 @@ into your browser.
 ┌─────────────────────────────────────────────────────┐
 │                    Render.com                        │
 │  ┌──────────────────────────────────────────────┐   │
-│  │  Rails 8 Monolith (web service)              │   │
-│  │  Hotwire · Tailwind · ActionCable            │   │
-│  └──────┬───────────────────────┬───────────────┘   │
-│         │                       │                   │
-│  ┌──────▼──────┐         ┌──────▼───────┐          │
-│  │ PostgreSQL  │         │ Solid Queue  │          │
-│  │ (primary +  │         │ worker       │          │
-│  │ queue/cable │         │ (Sidekiq-    │          │
-│  │ schemas)    │         │  replacement)│          │
-│  └─────────────┘         └──────────────┘          │
+│  │  Rails 8 Monolith (one web service)          │   │
+│  │  Puma + Hotwire + Tailwind + ActionCable     │   │
+│  │  Solid Queue runs inside Puma via plugin     │   │
+│  └────────────────────┬─────────────────────────┘   │
+│                       │                             │
+│  ┌────────────────────▼─────────────────────────┐   │
+│  │ PostgreSQL (single DB, basic-1gb)            │   │
+│  │ app tables + solid_queue/cache/cable tables  │   │
+│  └──────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────┘
   Resend (email) · Twilio (SMS) — both with webhooks
 ```
@@ -146,7 +145,9 @@ Triggered events and default channels:
 
 1. Push this repo to GitHub.
 2. In Render, **New → Blueprint** and point it at `render.yaml`. Render will
-   provision the Postgres database, the web service, and the background worker.
+   provision a single Postgres database and a single web service. Background
+   jobs (Solid Queue) run inside the web service via the Puma plugin — no
+   separate worker dyno.
 3. Set the secret env vars in the dashboard (everything marked `sync: false`
    in `render.yaml`):
 
