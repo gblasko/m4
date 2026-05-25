@@ -8,8 +8,8 @@ class SmsNotificationJob < ApplicationJob
 
     notif.update!(attempts: notif.attempts + 1)
     body = SmsBodyBuilder.for(notif)
-    sid = TwilioAdapter.send_sms(to: notif.to_address, body: body)
-    notif.update!(status: "sent", sent_at: Time.current, provider_id: sid)
+    message_id = QuoAdapter.send_sms(to: notif.to_address, body: body)
+    notif.update!(status: "sent", sent_at: Time.current, provider_id: message_id)
   rescue => e
     notif&.update(error: e.message[0, 500])
     if notif&.attempts.to_i >= 5

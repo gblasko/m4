@@ -30,6 +30,9 @@ group :development, :test do
   gem "rspec-rails", "~> 7.0"
   gem "factory_bot_rails"
   gem "faker"
+  # Auto-load .env / .env.local in dev + test so QUO_API_KEY etc. work locally.
+  # In production, env vars come from Render, not from .env files.
+  gem "dotenv-rails"
 end
 
 group :development do

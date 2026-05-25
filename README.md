@@ -14,7 +14,7 @@ miscellaneous on-water requests. Built from `PLAN.html`.
 | Background jobs  | Solid Queue (DB-backed — no Redis required) |
 | Database         | PostgreSQL |
 | Email            | Resend |
-| SMS              | Twilio |
+| SMS              | Quo (formerly OpenPhone) |
 | Hosting          | Render.com via `render.yaml` |
 
 > **Note**: `PLAN.html` specified Sidekiq + Redis. This implementation uses
@@ -63,7 +63,7 @@ into your browser.
 │  │ app tables + solid_queue/cache/cable tables  │   │
 │  └──────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────┘
-  Resend (email) · Twilio (SMS) — both with webhooks
+  Resend (email) · Quo (SMS) — both with webhooks
 ```
 
 ## Domain model
@@ -99,7 +99,7 @@ Three sign-in paths, all going through `POST /auth/login`:
 
 1. **Magic link** (default): submit `identifier=email@example.com` with no
    password → email link via `AuthMailer#magic_link`.
-2. **SMS code**: submit `identifier=555-123-4567` → 6-digit Twilio SMS →
+2. **SMS code**: submit `identifier=555-123-4567` → 6-digit Quo SMS →
    `POST /auth/verify` with `code=`.
 3. **Password**: submit `identifier=email` + `password=...` → direct sign-in
    if the user has a `password_digest` set (the seeded admin does).
@@ -128,7 +128,7 @@ Triggered events and default channels:
 | `request_assigned`  | Helper   | email |
 
 - SMS is throttled to 8am–9pm in the location timezone.
-- Webhooks: `POST /webhooks/resend`, `POST /webhooks/twilio`. The Twilio webhook
+- Webhooks: `POST /webhooks/resend`, `POST /webhooks/quo`. The Quo webhook
   honors `STOP/UNSUBSCRIBE/QUIT/CANCEL/END` by disabling SMS preferences for
   the originating phone.
 
@@ -158,9 +158,8 @@ Triggered events and default channels:
    | `RESEND_API_KEY`        | for email | From [resend.com](https://resend.com) — magic links won't deliver without it. |
    | `MAIL_FROM`             | for email | Verified sender address on your Resend account.                       |
    | `RESEND_WEBHOOK_SECRET` | optional  | If set, the `/webhooks/resend` endpoint requires `X-Webhook-Secret`.  |
-   | `TWILIO_ACCOUNT_SID`    | for SMS   | Twilio account SID.                                                   |
-   | `TWILIO_AUTH_TOKEN`     | for SMS   | Twilio auth token.                                                    |
-   | `TWILIO_FROM_NUMBER`    | for SMS   | Verified Twilio number (E.164 format).                                |
+   | `QUO_API_KEY`           | for SMS   | From [quo.com](https://www.quo.com) → Settings → API keys.            |
+   | `QUO_FROM`              | for SMS   | Either E.164 number (`+15555551234`) you own in Quo, or a Quo `PN…` id.|
 
 4. Render auto-generates `SECRET_KEY_BASE` and `SEED_MANAGER_PASSWORD` (both
    listed with `generateValue: true` in `render.yaml`) — you don't set those
@@ -225,7 +224,7 @@ unauthenticated).
 | GET | `/dashboard` · `/dashboard/day` · `/dashboard/week` | Staff views |
 | GET | `/admin/*` | Manager-only CRUD (customers, boats, locations, slips, request types, staff) |
 | GET | `/locations/:id/availability?date=` | JSON slot availability |
-| POST | `/webhooks/resend` · `/webhooks/twilio` | Delivery webhooks |
+| POST | `/webhooks/resend` · `/webhooks/quo` | Delivery webhooks |
 
 ## What's *not* in v1 (deferred)
 

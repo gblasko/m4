@@ -19,28 +19,43 @@ class WebhooksController < ApplicationController
     head :ok
   end
 
-  # Twilio webhook (form-encoded): MessageStatus=delivered/failed, MessageSid=..., From=...
-  def twilio
-    sid = params[:MessageSid].presence
-    status = params[:MessageStatus].to_s
-    body = params[:Body].to_s.strip.upcase
-    notif = Notification.find_by(provider_id: sid) if sid
+  # Quo (OpenPhone) webhook. JSON body roughly shaped like:
+  #   { "type": "message.delivered" | "message.received" | ...,
+  #     "data": { "id": "AC...", "status": "delivered"|"undelivered"|...,
+  #               "direction": "outgoing"|"incoming",
+  #               "from": "+1555...", "to": ["+1555..."], "text": "..." } }
+  # Use the dashboard at quo.com to subscribe this URL to message events.
+  def quo
+    payload = parse_payload
+    return head :ok if payload.blank?
 
-    if notif
+    data = payload["data"].is_a?(Hash) ? payload["data"] : {}
+    message_id = data["id"].presence
+    status     = data["status"].to_s
+    direction  = data["direction"].to_s
+    notif = Notification.find_by(provider_id: message_id) if message_id
+
+    if notif && direction != "incoming"
       case status
-      when "delivered" then notif.update(status: "delivered", delivered_at: Time.current)
-      when "failed", "undelivered" then notif.update(status: "failed", failed_at: Time.current, error: status)
+      when "delivered"
+        notif.update(status: "delivered", delivered_at: Time.current)
+      when "undelivered", "failed"
+        notif.update(status: "failed", failed_at: Time.current, error: status)
       end
     end
 
-    # STOP handling: opt-out user from SMS
-    if %w[STOP STOPALL UNSUBSCRIBE QUIT CANCEL END].include?(body)
-      digits = params[:From].to_s.gsub(/\D/, "")
-      user = User.where("regexp_replace(coalesce(phone,''), '\\D', '', 'g') = ?", digits).first
-      if user
-        prefs = (user.notification_prefs.presence || User::DEFAULT_PREFS).deep_dup
-        prefs.each { |_event, ch| ch["sms"] = false if ch.is_a?(Hash) && ch.key?("sms") }
-        user.update(notification_prefs: prefs)
+    # CTIA-mandated STOP/UNSUBSCRIBE handling on inbound messages
+    if direction == "incoming"
+      text = data["text"].to_s.strip.upcase
+      if %w[STOP STOPALL UNSUBSCRIBE QUIT CANCEL END].include?(text)
+        from = data["from"].to_s
+        digits = from.gsub(/\D/, "")
+        user = User.where("regexp_replace(coalesce(phone,''), '\\D', '', 'g') = ?", digits).first
+        if user
+          prefs = (user.notification_prefs.presence || User::DEFAULT_PREFS).deep_dup
+          prefs.each { |_event, ch| ch["sms"] = false if ch.is_a?(Hash) && ch.key?("sms") }
+          user.update(notification_prefs: prefs)
+        end
       end
     end
     head :ok
