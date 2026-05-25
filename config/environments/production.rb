@@ -62,14 +62,13 @@ Rails.application.configure do
     protocol: "https"
   }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Send mail via Resend's HTTP API (no SMTP). Custom adapter registered in
+  # config/initializers/resend_delivery.rb wraps ResendAdapter.send_email.
+  # Requires RESEND_API_KEY and MAIL_FROM (see render.yaml). Without them
+  # ResendAdapter logs a stub and returns a placeholder id.
+  config.action_mailer.delivery_method = :resend
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
