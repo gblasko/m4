@@ -53,7 +53,7 @@ Rails.application.routes.draw do
 
   # Webhooks
   post "/webhooks/resend", to: "webhooks#resend"
-  post "/webhooks/twilio", to: "webhooks#twilio"
+  post "/webhooks/quo", to: "webhooks#quo"
 
   # ActionCable
   mount ActionCable.server => "/cable"

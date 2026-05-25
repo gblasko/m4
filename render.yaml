@@ -87,10 +87,11 @@ services:
       - key: RESEND_WEBHOOK_SECRET
         sync: false
 
-      # ---- SMS (Twilio) ----
-      - key: TWILIO_ACCOUNT_SID
+      # ---- SMS (Quo) ----
+      # QUO_API_KEY: paste the value from quo.com -> Settings -> API keys
+      # QUO_FROM: either an E.164 number (e.g. "+15555555555") that you own
+      # in Quo, or a Quo phone number id ("PN..."). Either form works.
+      - key: QUO_API_KEY
         sync: false
-      - key: TWILIO_AUTH_TOKEN
-        sync: false
-      - key: TWILIO_FROM_NUMBER
+      - key: QUO_FROM
         sync: false
