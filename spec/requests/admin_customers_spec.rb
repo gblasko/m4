@@ -15,6 +15,26 @@ RSpec.describe "Admin::Customers", type: :request do
     get "/auth/verify", params: { token: raw }
   end
 
+  describe "GET /admin/customers/new" do
+    before { sign_in_as(manager) }
+
+    # Regression: form_with model: [:admin, customer] used to generate
+    # action="/admin/users" because customer is a User instance — the Staff
+    # endpoint then forced unknown roles to :helper, turning every new
+    # customer into a staff member.
+    it "renders a form that POSTs to /admin/customers (not /admin/users)" do
+      get "/admin/customers/new"
+      expect(response.body).to include('action="/admin/customers"')
+      expect(response.body).not_to include('action="/admin/users"')
+    end
+
+    it "renders the edit form with action /admin/customers/:id" do
+      cust = create(:user, :customer, organization: org)
+      get edit_admin_customer_path(cust)
+      expect(response.body).to include("action=\"/admin/customers/#{cust.id}\"")
+    end
+  end
+
   describe "POST /admin/customers" do
     before { sign_in_as(manager) }
 

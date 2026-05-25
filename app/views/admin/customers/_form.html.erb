@@ -1,4 +1,12 @@
-<%= form_with model: [:admin, customer], local: true, class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-2xl" do |f| %>
+<%# Customer records ARE Users, so the polymorphic [:admin, customer] form
+    helper would generate /admin/users (the Staff endpoint) — that endpoint
+    forces unknown roles to :helper, silently turning every new customer into
+    a staff member. Pass an explicit url to route through admin/customers. %>
+<%= form_with model: customer,
+              url: (customer.new_record? ? admin_customers_path : admin_customer_path(customer)),
+              method: (customer.new_record? ? :post : :patch),
+              local: true,
+              class: "space-y-4 bg-white rounded-xl border border-slate-200 p-6 max-w-2xl" do |f| %>
   <% if customer.errors.any? %>
     <div class="bg-rose-50 text-rose-800 p-3 rounded text-sm">
       <ul class="list-disc list-inside">
