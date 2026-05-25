@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     root to: "dashboard#index"
     resources :requests, only: [:new, :create]
     resources :customers do
+      member { post :invite }
       resources :boats, only: [:index, :new, :create, :edit, :update, :destroy], controller: "customer_boats"
     end
     resources :locations do

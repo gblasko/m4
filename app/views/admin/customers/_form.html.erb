@@ -17,7 +17,8 @@
     </label>
     <label class="block">
       <span class="text-sm font-medium text-slate-700">Phone</span>
-      <%= f.telephone_field :phone, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+      <%= f.telephone_field :phone, placeholder: "(555) 123-4567", class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+      <span class="text-xs text-slate-500">10-digit US numbers get +1 automatically. For international, include the country code (e.g. +44…).</span>
     </label>
     <label class="block">
       <span class="text-sm font-medium text-slate-700">Venmo handle (optional)</span>

@@ -29,4 +29,32 @@ RSpec.describe User, type: :model do
     u = build(:user, organization: org, email: nil, phone: nil)
     expect(u).not_to be_valid
   end
+
+  describe "phone normalization" do
+    it "coerces 10-digit US to E.164 with +1" do
+      u = create(:user, organization: org, phone: "555-123-4567")
+      expect(u.phone).to eq("+15551234567")
+    end
+
+    it "strips formatting from 11-digit input" do
+      u = create(:user, organization: org, phone: "1 (555) 123-4567")
+      expect(u.phone).to eq("+15551234567")
+    end
+
+    it "preserves an already-E.164 number" do
+      u = create(:user, organization: org, phone: "+447400123456")
+      expect(u.phone).to eq("+447400123456")
+    end
+
+    it "rejects gibberish that can't be coerced" do
+      u = build(:user, organization: org, email: "x@y.com", phone: "abc")
+      expect(u).not_to be_valid
+      expect(u.errors[:phone]).to include("must be a valid phone number")
+    end
+
+    it "rejects too-short input" do
+      u = build(:user, organization: org, email: "x@y.com", phone: "12345")
+      expect(u).not_to be_valid
+    end
+  end
 end

@@ -1,0 +1,9 @@
+Hi <%= @user.name %>,
+
+You've been invited to <%= @user.organization.name %>. Tap the link below to sign in — no password needed:
+
+<%= @url %>
+
+This link expires in 15 minutes and can be used once. If you didn't expect this email, you can ignore it.
+
+— <%= @user.organization.name %>
