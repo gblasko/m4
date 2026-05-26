@@ -1,6 +1,6 @@
 module Admin
   class UsersController < BaseController
-    before_action :set_user, only: [:edit, :update, :destroy]
+    before_action :set_user, only: [:edit, :update, :destroy, :test_push, :resync_pushover]
 
     def index
       @users = current_organization.users.staff.order(:name)
@@ -32,6 +32,55 @@ module Admin
         redirect_to admin_users_path, notice: "Staff member updated"
       else
         render :edit, status: :unprocessable_entity
+      end
+    end
+
+    # Send a one-off push directly to the staff user's Pushover user key
+    # (bypassing groups). Diagnostic: if this lands, the key + their device
+    # are good and any group-delivery problem is on the membership side.
+    def test_push
+      if @user.pushover_user_key.blank?
+        redirect_to edit_admin_user_path(@user), alert: "No Pushover user key on file" and return
+      end
+
+      PushoverAdapter.send_message(
+        group_key: @user.pushover_user_key,
+        title:     "Marina Ops — test push",
+        message:   "If you see this, your Pushover user key + device are working."
+      )
+      redirect_to edit_admin_user_path(@user),
+        notice: "Test push sent — check your device in a few seconds."
+    rescue PushoverAdapter::Error => e
+      redirect_to edit_admin_user_path(@user),
+        alert: "Pushover refused the test push: #{e.message}"
+    end
+
+    # Re-run add_user_to_group synchronously for every location this user
+    # is currently subscribed to. Diagnostic + recovery for cases where the
+    # original async sync job died or was lost.
+    def resync_pushover
+      if @user.pushover_user_key.blank?
+        redirect_to edit_admin_user_path(@user), alert: "No Pushover user key on file" and return
+      end
+
+      results = @user.subscribed_locations.map do |loc|
+        next "#{loc.name}: (no group key)" if loc.pushover_group_key.blank?
+        begin
+          PushoverAdapter.add_user_to_group(
+            group_key: loc.pushover_group_key,
+            user_key:  @user.pushover_user_key,
+            memo:      "#{@user.name} (#{@user.role})"
+          )
+          "#{loc.name}: ✓"
+        rescue PushoverAdapter::Error => e
+          "#{loc.name}: ✗ #{e.message}"
+        end
+      end
+
+      if results.empty?
+        redirect_to edit_admin_user_path(@user), alert: "Not subscribed to any locations"
+      else
+        redirect_to edit_admin_user_path(@user), notice: "Pushover re-sync: #{results.join(' · ')}"
       end
     end
 

@@ -67,6 +67,67 @@ RSpec.describe "Admin::Users Pushover wiring", type: :request do
     end
   end
 
+  describe "POST /admin/users/:id/test_push" do
+    let(:helper) { create(:user, :helper, organization: org, pushover_user_key: "x" * 30) }
+
+    it "sends a push directly to the user's pushover_user_key" do
+      expect(PushoverAdapter).to receive(:send_message)
+        .with(hash_including(group_key: helper.pushover_user_key))
+        .and_return("rcpt-1")
+
+      post "/admin/users/#{helper.id}/test_push"
+      expect(response).to redirect_to(edit_admin_user_path(helper))
+      follow_redirect!
+      expect(response.body).to include("Test push sent")
+    end
+
+    it "errors when no key is on file" do
+      keyless = create(:user, :helper, organization: org)
+      post "/admin/users/#{keyless.id}/test_push"
+      follow_redirect!
+      expect(response.body).to include("No Pushover user key")
+    end
+
+    it "surfaces Pushover errors in the flash" do
+      allow(PushoverAdapter).to receive(:send_message)
+        .and_raise(PushoverAdapter::Error.new("user has no active devices"))
+      post "/admin/users/#{helper.id}/test_push"
+      follow_redirect!
+      expect(response.body).to include("Pushover refused the test push")
+      expect(response.body).to include("no active devices")
+    end
+  end
+
+  describe "POST /admin/users/:id/resync_pushover" do
+    let(:helper) { create(:user, :helper, organization: org, pushover_user_key: "x" * 30) }
+
+    it "re-runs add_user_to_group for every subscribed location" do
+      helper.location_subscriptions.create!(location: location_a)
+      helper.location_subscriptions.create!(location: location_b)
+
+      expect(PushoverAdapter).to receive(:add_user_to_group)
+        .with(hash_including(group_key: location_a.pushover_group_key, user_key: helper.pushover_user_key))
+      expect(PushoverAdapter).to receive(:add_user_to_group)
+        .with(hash_including(group_key: location_b.pushover_group_key, user_key: helper.pushover_user_key))
+
+      post "/admin/users/#{helper.id}/resync_pushover"
+      follow_redirect!
+      expect(response.body).to include("Browns Bay: ✓")
+      expect(response.body).to include("Maxwells: ✓")
+    end
+
+    it "reports per-location failure rather than raising" do
+      helper.location_subscriptions.create!(location: location_a)
+      allow(PushoverAdapter).to receive(:add_user_to_group)
+        .and_raise(PushoverAdapter::Error.new("invalid user key"))
+
+      post "/admin/users/#{helper.id}/resync_pushover"
+      follow_redirect!
+      expect(response.body).to include("Browns Bay: ✗")
+      expect(response.body).to include("invalid user key")
+    end
+  end
+
   describe "PATCH /admin/users/:id" do
     let(:helper) { create(:user, :helper, organization: org, pushover_user_key: "x" * 30) }
 
