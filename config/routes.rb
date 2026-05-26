@@ -49,7 +49,12 @@ Rails.application.routes.draw do
     resources :request_types do
       member { post :reorder }
     end
-    resources :users
+    resources :users do
+      member do
+        post :test_push
+        post :resync_pushover
+      end
+    end
   end
 
   # Webhooks

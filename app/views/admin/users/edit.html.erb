@@ -2,4 +2,25 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <h1 class="text-2xl font-bold text-slate-900 mb-6">Edit staff — <%= @user.name %></h1>
   <%= render "form", user: @user %>
+
+  <% if @user.pushover_user_key.present? %>
+    <div class="mt-6 bg-slate-50 rounded-xl border border-slate-200 p-6 max-w-2xl">
+      <h2 class="text-sm font-semibold text-slate-900 mb-1">Pushover diagnostics</h2>
+      <p class="text-xs text-slate-500 mb-4">
+        Use these to troubleshoot push delivery. <strong>Test push</strong> sends directly to this user's
+        Pushover user key — if it lands, their key + device are good. <strong>Re-sync groups</strong>
+        re-runs the Pushover <code>add_user_to_group</code> call for every checked location above.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <%= button_to "Send test push", test_push_admin_user_path(@user),
+              method: :post,
+              class: "bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+        <% if @user.subscribed_locations.any? %>
+          <%= button_to "Re-sync Pushover groups", resync_pushover_admin_user_path(@user),
+                method: :post,
+                class: "bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>
