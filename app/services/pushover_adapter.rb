@@ -20,6 +20,10 @@ class PushoverAdapter
   class Error < StandardError; end
 
   # Send a push to a group (or user) key. Returns the Pushover receipt id.
+  #
+  # An empty delivery group ("group has no users or active devices in it")
+  # is treated as a successful no-op — that's a benign config state (no
+  # staff have joined the group yet), not a transient failure to retry.
   def self.send_message(group_key:, message:, title: nil, url: nil)
     return stub("send_message to=#{group_key} #{title}: #{message}") if app_key.blank?
 
@@ -27,8 +31,10 @@ class PushoverAdapter
     payload[:title] = title if title.present?
     payload[:url]   = url   if url.present?
 
-    body = post(MESSAGES_ENDPOINT, payload, context: "send_message")
-    body["request"] # Pushover returns a "request" UUID on success
+    body = post(MESSAGES_ENDPOINT, payload,
+                context: "send_message",
+                ignore_errors: [/no users or active devices/i])
+    body["request"] # Pushover returns a "request" UUID on success (nil when ignored)
   end
 
   # Add a user key to a group. Pushover returns status:0 if the user is

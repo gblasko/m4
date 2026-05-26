@@ -52,6 +52,16 @@ RSpec.describe PushoverAdapter do
       }.to raise_error(PushoverAdapter::Error, /application token/)
     end
 
+    it ".send_message treats an empty delivery group as a successful no-op" do
+      resp = stub_response(code: 400, body: { status: 0, user: "invalid",
+                                              errors: ["group has no users or active devices in it"] }.to_json)
+      allow(Net::HTTP).to receive(:start).and_return(resp)
+
+      expect {
+        described_class.send_message(group_key: "G", message: "x")
+      }.not_to raise_error
+    end
+
     it ".add_user_to_group treats 'already exists' as success" do
       resp = stub_response(code: 200, body: { status: 0, errors: ["user already exists in group"] }.to_json)
       expect(Net::HTTP).to receive(:start).and_return(resp)
