@@ -21,6 +21,48 @@
     </label>
   </div>
   <label class="inline-flex items-center gap-2"><%= f.check_box :is_active %><span class="text-sm">Active</span></label>
+
+  <div class="pt-4 border-t border-slate-200">
+    <h2 class="text-sm font-semibold text-slate-900 mb-1">Pushover alerts</h2>
+    <p class="text-xs text-slate-500 mb-3">
+      Real-time push notifications for new requests and status changes.
+      Each staff member needs a free <a href="https://pushover.net/" target="_blank" rel="noopener" class="text-blue-600 underline">Pushover</a> account; paste their 30-character user key below.
+    </p>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Pushover user key</span>
+      <%= f.text_field :pushover_user_key,
+            placeholder: "e.g. uQiRzpo4DXghDmr9QzzfQu27cmVRsG",
+            class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm" %>
+    </label>
+
+    <% locations = current_organization.locations.active.order(:name) %>
+    <% if locations.any? %>
+      <fieldset class="mt-4">
+        <legend class="text-sm font-medium text-slate-700 mb-2">Receive alerts for these locations</legend>
+        <% disabled = user.pushover_user_key.blank? %>
+        <% if disabled %>
+          <p class="text-xs text-amber-700 mb-2">Add a Pushover user key above to enable subscriptions.</p>
+        <% end %>
+        <% selected_ids = (params.dig(:user, :subscribed_location_ids) || user.subscribed_location_ids.map(&:to_s)).map(&:to_s) %>
+        <div class="space-y-2">
+          <% locations.each do |loc| %>
+            <label class="inline-flex items-center gap-2 mr-4">
+              <%= check_box_tag "user[subscribed_location_ids][]", loc.id,
+                    selected_ids.include?(loc.id.to_s),
+                    disabled: disabled,
+                    class: "rounded border-slate-300" %>
+              <span class="text-sm <%= 'text-slate-400' if disabled %>"><%= loc.name %></span>
+              <% if loc.pushover_group_key.blank? %>
+                <span class="text-xs text-amber-700">(no group key set)</span>
+              <% end %>
+            </label>
+          <% end %>
+        </div>
+        <%= hidden_field_tag "user[subscribed_location_ids][]", "" %>
+      </fieldset>
+    <% end %>
+  </div>
+
   <div class="flex gap-3 pt-2">
     <%= f.submit (user.new_record? ? "Add staff" : "Save"), class: "bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
     <%= link_to "Cancel", admin_users_path, class: "text-sm text-slate-600" %>

@@ -28,6 +28,14 @@ class NotificationService
     dispatch(event: event, request: req, recipient: req.customer)
   end
 
+  # Fan out a push notification to the location's Pushover delivery group.
+  # Pushover handles delivery to every staff member subscribed to that group;
+  # we don't track per-staff push receipts in our Notification table.
+  def self.dispatch_for_location(event:, request:)
+    return if request&.location&.pushover_group_key.blank?
+    PushoverNotificationJob.perform_later(event: event, request_id: request.id)
+  end
+
   def self.record_and_enqueue(event:, channel:, user:, request:)
     to_address = (channel == "email" ? user.email : user.phone)
     return if to_address.blank?

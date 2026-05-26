@@ -22,6 +22,8 @@ class User < ApplicationRecord
   has_many :customer_requests, class_name: "Request", foreign_key: :customer_id, dependent: :restrict_with_error
   has_many :assigned_requests, class_name: "Request", foreign_key: :assigned_to_id, dependent: :nullify
   has_many :notifications, dependent: :destroy
+  has_many :location_subscriptions, dependent: :destroy
+  has_many :subscribed_locations, through: :location_subscriptions, source: :location
 
   # E.164: leading +, country code (1–3 digits, no leading 0), national number,
   # total 8–15 digits. Stored canonically — Quo (OpenPhone) requires this format.
@@ -33,6 +35,9 @@ class User < ApplicationRecord
   validates :phone, format: { with: E164_FORMAT, message: "must be a valid phone number" },
     allow_blank: true,
     uniqueness: { scope: :organization_id, allow_blank: true }
+  # Pushover user keys are exactly 30 chars of [a-z0-9].
+  validates :pushover_user_key, format: { with: /\A[a-zA-Z0-9]{30}\z/, message: "must be a 30-char Pushover user key" },
+    allow_blank: true
   validate :email_or_phone_present
 
   before_validation :normalize_phone

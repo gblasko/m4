@@ -34,6 +34,7 @@ module Admin
                           organization: current_organization,
                           changes: { on_behalf_of: @customer.id }, ip: request.remote_ip)
         NotificationService.dispatch(event: "request_submitted", request: @request, recipient: @customer)
+        NotificationService.dispatch_for_location(event: "request_submitted", request: @request)
         DashboardChannel.broadcast_create(@request)
         redirect_to request_path(@request), notice: "Request created for #{@customer.name}"
       else

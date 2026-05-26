@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_25_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -80,12 +80,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_080000) do
     t.index ["location_id"], name: "index_location_hours_on_location_id"
   end
 
+  create_table "location_subscriptions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "location_id", null: false
+    t.string "pushover_member_status"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["location_id"], name: "index_location_subscriptions_on_location_id"
+    t.index ["user_id", "location_id"], name: "index_location_subscriptions_on_user_id_and_location_id", unique: true
+    t.index ["user_id"], name: "index_location_subscriptions_on_user_id"
+  end
+
   create_table "locations", force: :cascade do |t|
     t.string "address"
     t.datetime "created_at", null: false
     t.boolean "is_active", default: true, null: false
     t.string "name", null: false
     t.bigint "organization_id", null: false
+    t.string "pushover_group_key"
     t.string "slug", null: false
     t.integer "soft_cap_per_hour", default: 6, null: false
     t.string "timezone", default: "America/Chicago", null: false
@@ -360,6 +372,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_080000) do
     t.bigint "organization_id", null: false
     t.string "password_digest"
     t.string "phone"
+    t.string "pushover_user_key"
     t.integer "role", default: 2, null: false
     t.datetime "updated_at", null: false
     t.string "venmo_handle"
@@ -376,6 +389,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_080000) do
   add_foreign_key "boats", "slips"
   add_foreign_key "boats", "users", column: "owner_id"
   add_foreign_key "location_hours", "locations"
+  add_foreign_key "location_subscriptions", "locations"
+  add_foreign_key "location_subscriptions", "users"
   add_foreign_key "locations", "organizations"
   add_foreign_key "notifications", "requests"
   add_foreign_key "notifications", "users"

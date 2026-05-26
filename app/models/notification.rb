@@ -1,6 +1,6 @@
 class Notification < ApplicationRecord
   STATUSES = %w[pending sent delivered bounced failed skipped].freeze
-  CHANNELS = %w[email sms].freeze
+  CHANNELS = %w[email sms push].freeze
   EVENTS = %w[
     request_submitted request_started request_completed
     request_cancelled public_note_added request_assigned
