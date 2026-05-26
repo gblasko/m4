@@ -4,6 +4,8 @@ class Location < ApplicationRecord
   has_many :slips, dependent: :destroy
   has_many :boats, dependent: :restrict_with_error
   has_many :requests, dependent: :restrict_with_error
+  has_many :location_subscriptions, dependent: :destroy
+  has_many :subscribed_staff, through: :location_subscriptions, source: :user
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :organization_id },

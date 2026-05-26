@@ -6,8 +6,10 @@ ORG = Organization.find_or_create_by!(slug: "marina") { |o| o.name = "Marina" }
 
 # ---- Locations ----
 LOCATIONS = [
-  { slug: "browns-bay", name: "Browns Bay",     address: "Browns Bay Marina", timezone: "America/Chicago", soft_cap: 6, dry: 20, wet: 10 },
-  { slug: "maxwell",    name: "Maxwell",        address: "Maxwell Marina",    timezone: "America/Chicago", soft_cap: 6, dry: 20, wet: 10 }
+  { slug: "browns-bay", name: "Browns Bay", address: "Browns Bay Marina", timezone: "America/Chicago", soft_cap: 6, dry: 20, wet: 10,
+    pushover_group_key: "gawgufnpjp7315b5hrmdbdnsri1vm2" },
+  { slug: "maxwell",    name: "Maxwells",   address: "Maxwell Marina",    timezone: "America/Chicago", soft_cap: 6, dry: 20, wet: 10,
+    pushover_group_key: "gntoi5u6qub17xf4h8bq1ajofsfkyk" }
 ]
 
 LOCATIONS.each do |attrs|
@@ -17,6 +19,7 @@ LOCATIONS.each do |attrs|
     address: attrs[:address],
     timezone: attrs[:timezone],
     soft_cap_per_hour: attrs[:soft_cap],
+    pushover_group_key: attrs[:pushover_group_key],
     is_active: true
   )
   loc.save!

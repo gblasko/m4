@@ -47,6 +47,7 @@ class RequestsController < ApplicationController
       AuditLog.record!(auditable: @request, action: "create", actor: current_user,
                         organization: current_organization, ip: request.remote_ip)
       NotificationService.dispatch(event: "request_submitted", request: @request, recipient: current_user)
+      NotificationService.dispatch_for_location(event: "request_submitted", request: @request)
       DashboardChannel.broadcast_create(@request)
       redirect_to request_path(@request), notice: "Request submitted"
     else
@@ -96,6 +97,7 @@ class RequestsController < ApplicationController
                       organization: current_organization,
                       changes: { to: target }, ip: request.remote_ip)
     NotificationService.dispatch_for_status_change(@request)
+    NotificationService.dispatch_for_location(event: status_change_event(target), request: @request)
     DashboardChannel.broadcast_update(@request)
 
     respond_to do |fmt|
@@ -136,6 +138,7 @@ class RequestsController < ApplicationController
                       organization: current_organization,
                       changes: { to: "cancelled", reason: params[:reason] }, ip: request.remote_ip)
     NotificationService.dispatch(event: "request_cancelled", request: @request, recipient: @request.customer)
+    NotificationService.dispatch_for_location(event: "request_cancelled", request: @request)
     DashboardChannel.broadcast_update(@request)
     redirect_to request_path(@request), notice: "Request cancelled"
   end
@@ -157,6 +160,14 @@ class RequestsController < ApplicationController
   end
 
   private
+
+  def status_change_event(target)
+    case target
+    when "in_progress" then "request_started"
+    when "completed"   then "request_completed"
+    when "cancelled"   then "request_cancelled"
+    end
+  end
 
   # Merge notes + audit log into one chronological timeline for the staff view.
   def build_timeline(req)

@@ -95,3 +95,10 @@ services:
         sync: false
       - key: QUO_FROM
         sync: false
+
+      # ---- Push notifications (Pushover) ----
+      # App API token from pushover.net -> Your Applications. Each Location's
+      # pushover_group_key is seeded; staff user keys are managed in the admin
+      # Staff form. Set this in the Render dashboard (same key on staging + prod).
+      - key: PUSHOVER_APP_API_KEY
+        sync: false
