@@ -29,7 +29,7 @@ services:
   - type: web
     name: marina-web
     runtime: ruby
-    plan: starter
+    plan: standard
     autoDeploy: true
     buildCommand: ./bin/render-build
     startCommand: bundle exec puma -C config/puma.rb
