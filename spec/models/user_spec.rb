@@ -15,6 +15,23 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe "#venmo_url" do
+    it "builds a pay link, stripping a leading @ and encoding the note" do
+      u = build(:user, venmo_handle: "@hannah")
+      expect(u.venmo_url(note: "Tip for Wash"))
+        .to eq("https://venmo.com/hannah?txn=pay&note=Tip%20for%20Wash")
+    end
+
+    it "omits the note param when none is given" do
+      u = build(:user, venmo_handle: "hannah")
+      expect(u.venmo_url).to eq("https://venmo.com/hannah?txn=pay")
+    end
+
+    it "returns nil when no handle is set" do
+      expect(build(:user, venmo_handle: nil).venmo_url(note: "x")).to be_nil
+    end
+  end
+
   describe "#prefers?" do
     it "respects user prefs when set" do
       u = create(:user, organization: org)

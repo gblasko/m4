@@ -19,6 +19,11 @@
       <span class="text-sm font-medium text-slate-700">Role</span>
       <%= f.select :role, [["Manager", "manager"], ["Helper", "helper"]], {}, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
     </label>
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Venmo handle (optional)</span>
+      <%= f.text_field :venmo_handle, placeholder: "@handle", class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+      <span class="text-xs text-slate-500">Customers can tip this person via Venmo after a request they complete.</span>
+    </label>
   </div>
   <label class="inline-flex items-center gap-2"><%= f.check_box :is_active %><span class="text-sm">Active</span></label>
 

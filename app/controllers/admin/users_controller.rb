@@ -105,7 +105,7 @@ module Admin
       # Don't permit :role for mass assignment — validate it explicitly against
       # an allowlist so a tampered form can't push "customer" (or anything else)
       # through this staff-management endpoint.
-      perm = params.require(:user).permit(:name, :email, :phone, :is_active, :pushover_user_key)
+      perm = params.require(:user).permit(:name, :email, :phone, :is_active, :pushover_user_key, :venmo_handle)
       submitted_role = params.dig(:user, :role).to_s
       perm[:role] = submitted_role if STAFF_ROLES.include?(submitted_role)
       perm
