@@ -98,7 +98,7 @@ module Admin
     end
 
     def customer_params
-      params.require(:user).permit(:name, :email, :phone, :venmo_handle, :is_active)
+      params.require(:user).permit(:name, :email, :phone, :is_active)
     end
   end
 end

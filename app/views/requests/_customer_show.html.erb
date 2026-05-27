@@ -23,12 +23,11 @@
     </section>
   <% end %>
 
-  <% if req.completed? && req.assigned_to&.venmo_handle.present? %>
-    <% handle = req.assigned_to.venmo_handle.delete_prefix("@") %>
-    <a href="https://venmo.com/<%= handle %>?txn=pay&note=Tip%20for%20<%= ERB::Util.url_encode(req.request_type.name) %>"
+  <% if req.completed? && (tip_url = req.assigned_to&.venmo_url(note: "Tip for #{req.request_type.name}")) %>
+    <a href="<%= tip_url %>"
        class="block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-2xl">
-      💙 Tip via Venmo
-      <div class="text-xs font-normal opacity-75 mt-0.5">@<%= handle %> · <%= req.assigned_to.name %></div>
+      💙 Tip <%= req.assigned_to.name %> via Venmo
+      <div class="text-xs font-normal opacity-75 mt-0.5"><%= req.assigned_to.venmo_handle %></div>
     </a>
   <% end %>
 

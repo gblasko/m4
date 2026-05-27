@@ -92,12 +92,13 @@ manager.save!
 # staging/test environments — gated below before login is exposed.
 unless Rails.env.production?
   helper = ORG.users.find_or_initialize_by(email: "helper@example.com")
-  helper.assign_attributes(name: "Hannah Helper", role: :helper, is_active: true)
+  helper.assign_attributes(name: "Hannah Helper", role: :helper, is_active: true,
+                            venmo_handle: "@hannahhelper")
   helper.save!
 
   customer = ORG.users.find_or_initialize_by(email: "customer@example.com")
   customer.assign_attributes(name: "Casey Customer", role: :customer, is_active: true,
-                              phone: "555-010-0001", venmo_handle: "@caseyc")
+                              phone: "555-010-0001")
   customer.save!
 
   browns_bay = ORG.locations.find_by(slug: "browns-bay")

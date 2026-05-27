@@ -18,11 +18,14 @@
       <span class="text-sm font-medium text-slate-700">Phone</span>
       <%= f.telephone_field :phone, class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
     </label>
-    <label class="block">
-      <span class="text-sm font-medium text-slate-700">Venmo handle</span>
-      <%= f.text_field :venmo_handle, placeholder: "@yourhandle",
-            class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
-    </label>
+    <% if current_user.staff? %>
+      <label class="block">
+        <span class="text-sm font-medium text-slate-700">Venmo handle</span>
+        <%= f.text_field :venmo_handle, placeholder: "@yourhandle",
+              class: "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" %>
+        <span class="text-xs text-slate-500">Shown to customers so they can tip you after you complete a request.</span>
+      </label>
+    <% end %>
 
     <fieldset class="border border-slate-200 rounded-lg p-4">
       <legend class="px-2 text-sm font-medium text-slate-700">Notifications</legend>

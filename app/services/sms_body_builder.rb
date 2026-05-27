@@ -5,7 +5,14 @@ class SmsBodyBuilder
     type = req&.request_type&.name
     case notif.event
     when "request_completed"
-      "Marina: #{type} for #{boat} is complete. Reply STOP to opt out."
+      who   = req&.assigned_to&.name
+      parts = ["Marina: #{type} for #{boat} is complete"]
+      parts << "Completed by #{who}" if who.present?
+      if (url = req&.assigned_to&.venmo_url(note: "Tip for #{type}"))
+        parts << "Send #{who.presence || 'them'} a tip: #{url}"
+      end
+      parts << "Reply STOP to opt out."
+      parts.join(". ")
     when "request_cancelled"
       "Marina: #{type} for #{boat} was cancelled. Reply STOP to opt out."
     when "request_started"

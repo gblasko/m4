@@ -60,6 +60,15 @@ class User < ApplicationRecord
     email.presence || phone
   end
 
+  # Venmo deep link for tipping this staff member. nil when no handle is set.
+  def venmo_url(note: nil)
+    return if venmo_handle.blank?
+    handle = venmo_handle.delete_prefix("@")
+    url = "https://venmo.com/#{handle}?txn=pay"
+    url += "&note=#{ERB::Util.url_encode(note)}" if note.present?
+    url
+  end
+
   def self.lookup_by_login(identifier)
     return nil if identifier.blank?
     if identifier.include?("@")

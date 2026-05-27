@@ -26,6 +26,8 @@ class AccountController < ApplicationController
   private
 
   def account_params
-    params.require(:user).permit(:name, :email, :phone, :venmo_handle)
+    permitted = [:name, :email, :phone]
+    permitted << :venmo_handle if current_user.staff?
+    params.require(:user).permit(*permitted)
   end
 end
